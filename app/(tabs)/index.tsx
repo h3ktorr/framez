@@ -1,98 +1,87 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type Post = {
+  id: string;
+  author: string;
+  content: string;
+  image?: string;
+  timestamp: string;
+  avatar?: string;
+};
 
-export default function HomeScreen() {
+export default function FeedScreen() {
+  const posts: Post[] = [
+    {
+      id: '1',
+      author: 'Alice Johnson',
+      content: 'Enjoying this sunny day at the park! ☀️🌳',
+      image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+      timestamp: '2h ago',
+      avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
+    },
+    {
+      id: '2',
+      author: 'Bob Smith',
+      content: 'Just finished a new React Native tutorial! 🚀',
+      timestamp: '4h ago',
+      avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
+    },
+    {
+      id: '3',
+      author: 'Chloe Kim',
+      content: 'Coffee + code = happiness ☕💻',
+      image: 'https://images.unsplash.com/photo-1511920170033-f8396924c348',
+      timestamp: 'Yesterday',
+      avatar: 'https://randomuser.me/api/portraits/women/3.jpg',
+    },
+  ];
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.container}>
+      <Text style={styles.header}>Framez Feed</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <View style={styles.postCard}>
+            <View style={styles.authorRow}>
+              <Image source={{ uri: item.avatar }} style={styles.avatar} />
+              <View>
+                <Text style={styles.author}>{item.author}</Text>
+                <Text style={styles.timestamp}>{item.timestamp}</Text>
+              </View>
+            </View>
+
+            <Text style={styles.content}>{item.content}</Text>
+
+            {item.image && (
+              <Image source={{ uri: item.image }} style={styles.postImage} />
+            )}
+          </View>
+        )}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+  header: { fontSize: 22, fontWeight: 'bold', marginBottom: 12 },
+  postCard: {
+    backgroundColor: '#fafafa',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  authorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
+  author: { fontWeight: '600', fontSize: 16 },
+  timestamp: { fontSize: 12, color: '#666' },
+  content: { fontSize: 15, marginBottom: 8 },
+  postImage: { width: '100%', height: 200, borderRadius: 8, marginTop: 6 },
 });
