@@ -1,10 +1,16 @@
+// app/(tabs)/post.tsx
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSupabase } from '../../context/SupabaseProvider';
+import { supabase } from '../../supabase/config';
 
 export default function PostScreen() {
   const [content, setContent] = useState('');
   const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const { user } = useSupabase(); // get the logged-in user
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -14,10 +20,31 @@ export default function PostScreen() {
     if (!result.canceled) setImage(result.assets[0].uri);
   };
 
-  const handlePost = () => {
-    console.log('Post created:', { content, image });
-    setContent('');
-    setImage(null);
+  const handlePost = async () => {
+    if (!user) return Alert.alert('Error', 'You must be logged in to post.');
+    if (!content && !image) return Alert.alert('Error', 'Post cannot be empty.');
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.from('posts').insert([
+        {
+          user_id: user.id,   // ⚡ link to the profile
+          content: content,
+          image_url: image,
+        },
+      ]);
+
+      if (error) throw error;
+
+      Alert.alert('Success', 'Post created!');
+      setContent('');
+      setImage(null);
+    } catch (err: any) {
+      console.error('Error creating post:', err);
+      Alert.alert('Error creating post', err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,8 +65,8 @@ export default function PostScreen() {
         <Text style={styles.imageButtonText}>Add Image</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.postButton} onPress={handlePost}>
-        <Text style={styles.postButtonText}>Post</Text>
+      <TouchableOpacity style={[styles.postButton, loading && { opacity: 0.7 }]} onPress={handlePost} disabled={loading}>
+        <Text style={styles.postButtonText}>{loading ? 'Posting...' : 'Post'}</Text>
       </TouchableOpacity>
     </View>
   );

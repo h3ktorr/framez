@@ -1,50 +1,119 @@
-# Welcome to your Expo app 👋
+# 📸 Framez
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**Framez** is a social media app built with **Expo**, **React Native**, and **Supabase** — designed for sharing photos, captions, and connecting with others.  
+Users can upload images, view their feed in real-time, manage their profile, and log in securely using Supabase authentication.
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Features
 
-   ```bash
-   npm install
-   ```
+- 🧑‍🤝‍🧑 **User Authentication** – Sign up, log in, and manage sessions via Supabase Auth
+- 🖼️ **Photo Feed** – Browse posts from all users with live updates (real-time subscription)
+- 📷 **Image Uploads** – Upload photos from device gallery and store securely in Supabase Storage
+- 👤 **Profile Management** – Update your avatar, view your posts, and log out
+- 🕒 **Timestamps** – Posts display when they were created
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## 🧩 Tech Stack
 
-In the output, you'll find options to open the app in a
+| Layer              | Technology                           |
+| ------------------ | ------------------------------------ |
+| **Frontend**       | Expo (React Native)                  |
+| **Backend**        | Supabase (Postgres + Auth + Storage) |
+| **Realtime**       | Supabase Realtime Channels           |
+| **Navigation**     | Expo Router                          |
+| **Media Handling** | Expo Image Picker                    |
+| **Builds**         | EAS Build                            |
+| **Hosting (demo)** | Appetize.io                          |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 📁 Folder Structure
 
-## Get a fresh project
+framez/
+├── app/
+│ ├── (auth)/login.tsx
+│ ├── (tabs)/
+│ │ ├── index.tsx
+│ │ ├── profile.tsx
+│ │ └── upload.tsx
+│ └── index.tsx
+├── assets/
+│ ├── images/
+│ │ ├── icon.png
+├── supabase/
+│ └── config.ts
+├── context/
+│ └── SupabaseProvider.tsx
+├── eas.json
+├── app.json
+└── README.md
 
-When you're ready, run:
+---
+
+## ⚙️ Setup & Installation
+
+### 1️⃣ Clone the repository
 
 ```bash
-npm run reset-project
+git clone https://github.com/<your-username>/framez.git
+cd framez
+
+2️⃣ Install dependencies
+
+npm install
+
+3️⃣ Create a .env file
+
+Add your Supabase credentials:
+
+EXPO_PUBLIC_SUPABASE_URL=https://your-supabase-url.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+4️⃣ Run locally
+
+npx expo start
+
+    You can open it on your phone with the Expo Go app or run it in an Android/iOS emulator.
+
+📦 Building the App (APK)
+
+To generate an Android APK:
+
+eas build -p android --profile preview
+
+or to build for production:
+
+eas build -p android --profile production
+
+The resulting .apk will be available in your Expo Dashboard
+
+.
+🌐 Hosting the Demo on Appetize.io
+
+    Upload your .apk build to Appetize.io
+
+    Copy the generated link
+
+    Share or embed it anywhere — Appetize will simulate your app in-browser
+
+🧠 Environment Variables
+Variable	Description
+EXPO_PUBLIC_SUPABASE_URL	Supabase project URL
+EXPO_PUBLIC_SUPABASE_ANON_KEY	Supabase public anon key
+📲 Screens
+Screen	Description
+Feed	Displays latest posts with images and captions
+Profile	Shows user info and personal uploads
+Upload	Allows posting a new photo with caption
+Login	User authentication screen
+🧑‍💻 Author
+
+Kelvin (h3ktorrr)
+Frontend Developer | Mobile + Web
+Expo.dev Profile
+🪪 License
+
+MIT License © 2025 Kelvin (h3ktorrr)
 ```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

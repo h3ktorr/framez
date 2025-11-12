@@ -1,87 +1,88 @@
-import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
-
-type Post = {
-  id: string;
-  author: string;
-  content: string;
-  image?: string;
-  timestamp: string;
-  avatar?: string;
-};
+// app/(tabs)/feed.tsx
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View } from 'react-native';
+import { supabase } from '../../supabase/config';
 
 export default function FeedScreen() {
-  const posts: Post[] = [
-    {
-      id: '1',
-      author: 'Alice Johnson',
-      content: 'Enjoying this sunny day at the park! ☀️🌳',
-      image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-      timestamp: '2h ago',
-      avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-    },
-    {
-      id: '2',
-      author: 'Bob Smith',
-      content: 'Just finished a new React Native tutorial! 🚀',
-      timestamp: '4h ago',
-      avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-    },
-    {
-      id: '3',
-      author: 'Chloe Kim',
-      content: 'Coffee + code = happiness ☕💻',
-      image: 'https://images.unsplash.com/photo-1511920170033-f8396924c348',
-      timestamp: 'Yesterday',
-      avatar: 'https://randomuser.me/api/portraits/women/3.jpg',
-    },
-  ];
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('posts')
+          .select(`
+            id,
+            image_url,
+            content,
+            created_at,
+            profiles!inner(username, avatar_url)
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setPosts(data || []);
+      } catch (err) {
+        console.error('Error loading posts:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+
+    // 🔁 Real-time listener
+    const subscription = supabase
+      .channel('realtime:posts')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'posts' },
+        () => fetchPosts()
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(subscription);
+  }, []);
+
+  if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" />;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Framez Feed</Text>
-
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View style={styles.postCard}>
-            <View style={styles.authorRow}>
-              <Image source={{ uri: item.avatar }} style={styles.avatar} />
-              <View>
-                <Text style={styles.author}>{item.author}</Text>
-                <Text style={styles.timestamp}>{item.timestamp}</Text>
-              </View>
-            </View>
-
-            <Text style={styles.content}>{item.content}</Text>
-
-            {item.image && (
-              <Image source={{ uri: item.image }} style={styles.postImage} />
-            )}
+    <FlatList
+      data={posts}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <View style={styles.post}>
+          <View style={styles.userRow}>
+            <Image
+              source={{ uri: item.profiles?.avatar_url || 'https://via.placeholder.com/40' }}
+              style={styles.avatar}
+            />
+            <Text style={styles.username}>{item.profiles?.username || 'User'}</Text>
           </View>
-        )}
-      />
-    </View>
+
+          {item.image_url && <Image source={{ uri: item.image_url }} style={styles.image} />}
+          {item.content && <Text style={styles.caption}>{item.content}</Text>}
+
+          {/* Timestamp */}
+          {item.created_at && (
+            <Text style={styles.timestamp}>
+              {new Date(item.created_at).toLocaleString()}
+            </Text>
+          )}
+        </View>
+      )}
+      contentContainerStyle={{ padding: 10 }}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
-  header: { fontSize: 22, fontWeight: 'bold', marginBottom: 12 },
-  postCard: {
-    backgroundColor: '#fafafa',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-  },
-  authorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  post: { marginBottom: 20, backgroundColor: '#fff', borderRadius: 10, overflow: 'hidden' },
+  userRow: { flexDirection: 'row', alignItems: 'center', padding: 10 },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
-  author: { fontWeight: '600', fontSize: 16 },
-  timestamp: { fontSize: 12, color: '#666' },
-  content: { fontSize: 15, marginBottom: 8 },
-  postImage: { width: '100%', height: 200, borderRadius: 8, marginTop: 6 },
+  username: { fontWeight: '600', fontSize: 16 },
+  image: { width: '100%', height: 300, backgroundColor: '#f0f0f0' },
+  caption: { padding: 10, fontSize: 14, color: '#333' },
+  timestamp: { fontSize: 12, color: '#888', paddingHorizontal: 10, paddingBottom: 5 },
 });

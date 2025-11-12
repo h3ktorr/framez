@@ -1,22 +1,27 @@
 // app/(tabs)/_layout.tsx
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { Tabs, useRouter } from 'expo-router';
+import { Text, TouchableOpacity } from 'react-native';
+import { supabase } from '../../supabase/config';
 
 export default function TabsLayout() {
-  const colorScheme = useColorScheme();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      router.replace('/(auth)/login'); // redirect to login after logout
+    } catch (error: any) {
+      console.log('Logout error:', error.message);
+    }
+  };
 
   return (
     <Tabs
       screenOptions={{
         headerShown: true,
-        tabBarActiveTintColor: '#f1f1f1',
-        tabBarStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#111' : '#fff',
-          borderTopColor: '#ddd',
-          height: 60,
-          paddingBottom: 8,
-        },
+        tabBarActiveTintColor: '#000',
       }}
     >
       <Tabs.Screen
@@ -28,23 +33,26 @@ export default function TabsLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="post"
         options={{
-          title: 'Create',
+          title: 'Post',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle-outline" size={size + 4} color={color} />
+            <Ionicons name="add-circle-outline" size={size} color={color} />
           ),
         }}
       />
-
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
+          ),
+          headerRight: () => (
+            <TouchableOpacity onPress={handleLogout} style={{ marginRight: 15 }}>
+              <Text style={{ color: '#ff3b30', fontWeight: '600' }}>Logout</Text>
+            </TouchableOpacity>
           ),
         }}
       />
